@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               WWW-Salesforce-Report
-version:            0.02
+version:            0.03
 abstract:           The poor man's Salesforce report API in Perl!
 author:
     - Pedro Paixao <paixaop@gmail.com>

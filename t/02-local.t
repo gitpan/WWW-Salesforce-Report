@@ -18,13 +18,14 @@ BEGIN {
 # should not fail
 my $sfr;
 my $path = File::Spec->rel2abs( File::Spec->curdir() );
-my @dirs =();
-if( $path !~ /\/t$/ ) { 
-    @dirs = ($path, "t");
-} else {
-    @dirs = ($path);
-}
+my @dirs =($path);
 my $file = File::Spec->catfile( @dirs,  "report.csv");
+if( !-e $file ) { 
+   @dirs = ($path, "t");
+   $file = File::Spec->catfile( @dirs,  "report.csv");
+}
+ok(-e $file, "Report.csv file exists: $file");
+   
 diag("\nReading file: $file");
 eval {
     $sfr = WWW::Salesforce::Report->new(
