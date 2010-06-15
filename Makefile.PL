@@ -21,6 +21,7 @@ WriteMakefile(
         'IO::Compress::Zip'     => 0,
         'DBI'                   => 0,
         'Carp'                  => 0,
+        'File::Spec'            => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'WWW-Salesforce-Report-*' },

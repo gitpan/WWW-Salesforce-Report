@@ -1,5 +1,9 @@
 Revision history for WWW-Salesforce-Report
 
-0.01    Date/time
+0.02    6/14/2010
+        changed file reading to be platform independent.
+        added new tests to check local file reading.
+        
+0.01    6/1/2010
         First version, released on an unsuspecting world.
 

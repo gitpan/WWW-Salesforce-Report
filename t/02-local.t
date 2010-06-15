@@ -8,6 +8,7 @@ use English '-no_match_vars';
 use lib "../lib";
 use strict;
 use DBI;
+use File::Spec;
 
 BEGIN {
     use_ok( 'WWW::Salesforce::Report' ) || print "Bail out!
@@ -16,12 +17,21 @@ BEGIN {
 
 # should not fail
 my $sfr;
+my $path = File::Spec->rel2abs( File::Spec->curdir() );
+my @dirs =();
+if( $path !~ /\/t$/ ) { 
+    @dirs = ($path, "t");
+} else {
+    @dirs = ($path);
+}
+my $file = File::Spec->catfile( @dirs,  "report.csv");
+diag("\nReading file: $file");
 eval {
     $sfr = WWW::Salesforce::Report->new(
-        file => "t/report.csv",
+        file => $file,
     );
 };
-ok(!$EVAL_ERROR , "Testing new() with just file");
+ok(!$EVAL_ERROR , "Testing new() with just file " . $EVAL_ERROR);
 
 ok( $sfr->name() =~ /report.csv.db3$/, "Test local cache file name");
 ok( $sfr->format() eq "csv",            "Test default format");
@@ -30,7 +40,7 @@ ok( $sfr->format() eq "csv",            "Test default format");
 eval {
     $sfr->format(format => "xls" );
 };
-ok( $EVAL_ERROR,   "Test set format xls with local file");
+ok( $EVAL_ERROR,   "Test set format xls with local file " . $EVAL_ERROR);
 
 ok( $sfr->format(format => "csv" ) eq "csv",   "Test set format csv");
 ok( $sfr->{ url } eq $sfr->{ csv_report_url }, "Test CSV URL");
@@ -68,7 +78,7 @@ my $dbh;
 eval {
     $dbh= DBI->connect("dbi:SQLite:dbname=". $db_name,"","");
 };
-ok( !$EVAL_ERROR, "Test database connection");
+ok( !$EVAL_ERROR, "Test database connection " . $EVAL_ERROR);
 
 my @tables = $dbh->tables('%', '%', '%','TABLE');
 my @expected = ( '"main"."notifications"',  '"main"."report"', '"main"."sqlite_sequence"' );
@@ -78,7 +88,7 @@ my %result;
 eval {
     %result = $sfr->query(query => "select * from report");
 };
-ok( !$EVAL_ERROR, "Test report query");
+ok( !$EVAL_ERROR, "Test report query " . $EVAL_ERROR);
 
 ok( $result{num_fields} == 6, "Test number of fields");
 @expected = qw( __hash __id OpportunityOwner OpportunityOwnerEmail OpportunityName Amount);
@@ -111,7 +121,7 @@ eval {
 };
 ok(
     !$EVAL_ERROR,
-    "Test write no compress"
+    "Test write no compress " . $EVAL_ERROR
 );
 ok(
     $name =~ /report.csv$/,
@@ -127,7 +137,7 @@ eval {
 };
 ok(
     !$EVAL_ERROR,
-    "Test write no compress"
+    "Test write no compress " . $EVAL_ERROR
 );
 ok(
     $name =~ /report.zip$/,
@@ -143,37 +153,40 @@ unlink($name);
 
 # Test with baddly formated files
 diag "A couple of DB errors will be generated. Ignore them";
+$file = File::Spec->catfile( @dirs,  "bad_report_1.csv");
+diag("\nReading file: $file");
 eval {
     $sfr = WWW::Salesforce::Report->new(
-        file => "t/bad_report_1.csv",
+        file => $file,
     );
 };
-ok(!$EVAL_ERROR , "Testing new() with just file bad_report_1.csv");
+ok(!$EVAL_ERROR , "Testing new() with just file bad_report_1.csv " . $EVAL_ERROR);
 
 eval {
     $data = $sfr->get_report();
 };
-ok($EVAL_ERROR, "Test get_report bad_report_1.csv");
+ok($EVAL_ERROR, "Test get_report bad_report_1.csv. " . $EVAL_ERROR);
 
-
+$file = File::Spec->catfile( @dirs,  "bad_report_2.csv");
+diag("\nReading file: $file");
 eval {
     $sfr = WWW::Salesforce::Report->new(
-        file => "t/bad_report_2.csv",
+        file => $file,
     );
 };
-ok(!$EVAL_ERROR , "Testing new() with just file bad_report_2.csv");
+ok(!$EVAL_ERROR , "Testing new() with just file bad_report_2.csv " . $EVAL_ERROR);
 
 eval {
     $data = $sfr->get_report();
 };
-ok($EVAL_ERROR, "Test get_report bad_report_2.csv");
+ok($EVAL_ERROR, "Test get_report bad_report_2.csv " . $EVAL_ERROR);
 
 eval {
     $sfr = WWW::Salesforce::Report->new(
         file => "this_file_does_not_exist.csv",
     );
 };
-ok($EVAL_ERROR , "Testing for non existing local file");
+ok($EVAL_ERROR , "Testing for non existing local file " . $EVAL_ERROR);
 
 # Test file writing
 
